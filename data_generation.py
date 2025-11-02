@@ -1,51 +1,81 @@
-import psycopg2
-import os
-import random
-from datetime import datetime, timedelta
-import numpy as np
+# CAUTION: This script will delete all existing rows in the 'login' table.
+import os, random, math
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
+import psycopg
 
 load_dotenv()
 
-conn = psycopg2.connect(
-    user=os.getenv("user"),
-    password=os.getenv("password"),
-    host=os.getenv("host"),
-    port=os.getenv("port"),
-    dbname=os.getenv("dbname")
-)
+def get_conn():
+    dsn = os.getenv("DATABASE_URL")
+    if not dsn:
+        raise RuntimeError("DATABASE_URL not set")
+    if "sslmode=" not in dsn:
+        dsn += ("&" if "?" in dsn else "?") + "sslmode=require"
+    return psycopg.connect(dsn, prepare_threshold=None)
 
-cur = conn.cursor()
+def clamp(v, lo, hi): return max(lo, min(hi, v))
 
-print("Connected!")
+print("Connecting…")
+with get_conn() as conn, conn.cursor() as cur:
+    print("Connected!")
 
-# Parameter
-regions = ["EU", "US", "APAC"]
-status_codes = [200, 201, 400, 404, 500, 504]
-start_time = datetime.utcnow() - timedelta(days=7)
-total_minutes = 7 * 24 * 60  # 7 days; every minute
+    cur.execute("DELETE FROM login;")
+    conn.commit()
+    print("🧹 Existing rows deleted.")
 
-sql = """
-INSERT INTO login (timestamp, response_time_ms, request_size_kb, response_size_kb, status_code, region)
-VALUES (%s, %s, %s, %s, %s, %s);
-"""
+    start = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
-for i in range(total_minutes):
-    ts = start_time + timedelta(minutes=i)
+    today_utc = datetime.now(timezone.utc).date()
+    end = datetime.combine(today_utc, datetime.min.time(), tzinfo=timezone.utc)
 
-    response_time = int(np.clip(np.random.normal(250, 80), 50, 900))
-    request_size = int(np.clip(np.random.normal(120, 40), 10, 300))
-    response_size = int(np.clip(np.random.normal(200, 60), 20, 400))
-    status = random.choice(status_codes)
-    region = random.choice(regions)
+    if end <= start:
+        raise RuntimeError("End before or equal start; nothing to generate.")
 
-    cur.execute(sql, (ts, response_time, request_size, response_size, status, region))
+    total_minutes = int((end - start).total_seconds() // 60)
 
-    if i % 500 == 0:
+    sql = """
+        INSERT INTO login (timestamp, response_time_ms, request_size_kb, response_size_kb, status_code, region)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    regions = ("EU","US","APAC")
+    codes   = (200,201,400,404,500,504)
+
+    BATCH = 10_000
+    batch = []
+    inserted = 0
+    ts = start
+
+    for _ in range(total_minutes):
+        u1, u2 = random.random(), random.random()
+        z = math.sqrt(-2*math.log(max(u1, 1e-12))) * math.cos(2*math.pi*u2)
+
+        resp_ms = int(clamp(250 + 80*z, 50, 900))
+        req_kb  = int(clamp(120 + 40*z, 10, 300))
+        res_kb  = int(clamp(200 + 60*z, 20, 400))
+        status  = random.choice(codes)
+        region  = random.choice(regions)
+
+        batch.append((ts, resp_ms, req_kb, res_kb, status, region))
+
+        if len(batch) >= BATCH:
+            cur.executemany(sql, batch)
+            conn.commit()
+            inserted += len(batch)
+            print(f"Inserted {inserted:,} / {total_minutes:,}")
+            batch.clear()
+
+        ts += timedelta(minutes=1)
+
+    if batch:
+        cur.executemany(sql, batch)
         conn.commit()
-        print(f"Inserted {i} / {total_minutes}...")
+        inserted += len(batch)
+        print(f"Inserted {inserted:,} / {total_minutes:,}")
 
-conn.commit()
-cur.close()
-conn.close()
-print("✅ Done, all rows inserted.")
+    cur.execute("SELECT COUNT(*) FROM login;")
+    (count_actual,) = cur.fetchone()
+    if count_actual != total_minutes:
+        raise RuntimeError(f"Mismatch: expected {total_minutes:,} rows, got {count_actual:,}")
+
+print("✅ Done — one row per minute up to today's 00:00 UTC (today skipped).")
