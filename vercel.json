@@ -1,14 +1,11 @@
 {
     "builds": [
-      { "src": "api/**/*.py", "use": "@vercel/python" },
       { "src": "app.py", "use": "@vercel/python" }
     ],
     "routes": [
-      { "src": "^/api/cron_fill(?:\\.py)?$", "dest": "api/cron_fill.py" },
-      { "src": "^/api/(.*)$", "dest": "api/$1" },
       { "src": "/(.*)", "dest": "app.py" }
     ],
     "crons": [
-      { "path": "/api/cron_fill", "schedule": "5 0 * * *" }
+      { "path": "/cron_fill", "schedule": "5 0 * * *" }
     ]
   }
