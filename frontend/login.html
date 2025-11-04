@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h1>Login</h1>
+      <p class="subtitle">Melde dich mit deinem Konto an</p>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="loginEmail">E-Mail</label>
+          <input type="email" id="loginEmail" name="loginEmail" required />
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Passwort</label>
+          <input type="password" id="loginPassword" name="loginPassword" required />
+        </div>
+
+        <button type="submit" class="primary-btn">Login</button>
+
+        <p id="loginMessage" class="form-message"></p>
+
+        <p class="auth-switch">
+          Noch kein Konto?
+          <a href="register.html">Jetzt registrieren</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+</body>
+</html>
