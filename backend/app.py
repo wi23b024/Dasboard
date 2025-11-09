@@ -4,12 +4,14 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
 import psycopg
 from psycopg.rows import dict_row 
 from passlib.context import CryptContext
+import secrets
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 app = FastAPI(title="App Metrics API")
 
@@ -18,7 +20,7 @@ app = FastAPI(title="App Metrics API")
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost")  # anpassen!
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

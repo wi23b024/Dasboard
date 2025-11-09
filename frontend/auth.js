@@ -1,5 +1,5 @@
 // Platzhalter-URLs 
-const BASE_URL = "https://sepj.vercel.app";
+const BASE_URL = "http://localhost:8000";
 const REGISTER_API_URL = `${BASE_URL}/registrieren`;
 const LOGIN_API_URL    = `${BASE_URL}/login`;
 
