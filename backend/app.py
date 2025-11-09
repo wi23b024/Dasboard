@@ -1,12 +1,17 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException, Response, Request, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
+from pathlib import Path
+
 import psycopg
 from psycopg.rows import dict_row 
-from fastapi.middleware.cors import CORSMiddleware
+from passlib.context import CryptContext
+import secrets
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 app = FastAPI(title="App Metrics API")
 
@@ -18,6 +23,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+SESSION_COOKIE_NAME = "session_id"
+SESSION_TTL_HOURS = int(os.getenv("SESSION_TTL_HOURS", "24"))
+
 def get_conn():
     dsn = os.getenv("DATABASE_URL")
     if not dsn:
@@ -28,9 +38,83 @@ def get_conn():
 
     return psycopg.connect(dsn, prepare_threshold=None)
 
+# ---------- SCHEMAS ----------
+class RegisterIn(BaseModel):
+    firstName: str
+    lastName: str
+    email: EmailStr
+    password: str
+
+class LoginIn(BaseModel):
+    email: EmailStr
+    password: str
+
+# ---------- HELPERS ----------
+def set_session_cookie(resp: Response, session_id: str):
+    # Frontend ≠ Backend → Cross-Site-Cookie nötig
+    resp.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=session_id,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=SESSION_TTL_HOURS * 3600,
+        path="/",
+    )
+
+def clear_session_cookie(resp: Response):
+    resp.delete_cookie(SESSION_COOKIE_NAME, path="/")
+
+def create_session(conn, user_id: str) -> str:
+    session_id = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=SESSION_TTL_HOURS)
+    with conn.cursor() as cur:
+        cur.execute(
+            "insert into sessions (session_id, user_id, expires_at) values (%s, %s, %s);",
+            (session_id, user_id, expires_at),
+        )
+    return session_id
+
+def get_user_by_session(conn, session_id: str):
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("""
+            select u.id, u.first_name, u.last_name, u.email, u.created_at
+            from sessions s
+            join users u on u.id = s.user_id
+            where s.session_id = %s and s.expires_at > now();
+        """, (session_id,))
+        return cur.fetchone()
+
 @app.get("/")
 def root():
     return {"message": "API is running"}
+
+@app.post("/registrieren")
+def registrieren(body: RegisterIn):
+    with get_conn() as conn, conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("select 1 from users where email=%s;", (body.email.lower(),))
+        if cur.fetchone():
+            raise HTTPException(status_code=409, detail="E-Mail bereits registriert.")
+        pw_hash = pwd_ctx.hash(body.password)
+        cur.execute("""
+            insert into users (first_name, last_name, email, password_hash)
+            values (%s,%s,%s,%s)
+            returning id, first_name, last_name, email, created_at;
+        """, (body.firstName.strip(), body.lastName.strip(), body.email.lower(), pw_hash))
+        user = cur.fetchone()
+    return {"ok": True, "message": "Registrierung erfolgreich.", "user": user}
+
+@app.post("/login")
+def login(body: LoginIn, response: Response):
+    with get_conn() as conn, conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("select id, password_hash from users where email=%s;", (body.email.lower(),))
+        row = cur.fetchone()
+        if not row or not pwd_ctx.verify(body.password, row["password_hash"]):
+            raise HTTPException(status_code=401, detail="E-Mail oder Passwort falsch.")
+        session_id = create_session(conn, row["id"])
+        conn.commit()
+    set_session_cookie(response, session_id)
+    return {"ok": True, "message": "Login erfolgreich."}
 
 # --- Metrics Endpoint ---
 @app.get("/metrics")

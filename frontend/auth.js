@@ -1,6 +1,7 @@
 // Platzhalter-URLs 
-const REGISTER_API_URL = "https://BACKEND-WIRD-NOCH-ERGÄNZT/registrieren"; // TODO: vom Backend ersetzen
-const LOGIN_API_URL = "https://BACKEND-WIRD-NOCH-ERGÄNZT/login";           // TODO: vom Backend ersetzen
+const BASE_URL = "http://localhost:8000";
+const REGISTER_API_URL = `${BASE_URL}/registrieren`;
+const LOGIN_API_URL    = `${BASE_URL}/login`;
 
 document.addEventListener("DOMContentLoaded", () => {
   const registerForm = document.getElementById("registerForm");
@@ -60,6 +61,7 @@ async function handleRegister(event) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
+      credentials: "include",
     });
 
     let data = null;
@@ -126,6 +128,7 @@ async function handleLogin(event) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
+      credentials: "include",
     });
 
     let data = null;
