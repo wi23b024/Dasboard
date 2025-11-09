@@ -2,13 +2,21 @@ from fastapi import FastAPI, Query
 from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
-
 import psycopg
 from psycopg.rows import dict_row 
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 app = FastAPI(title="App Metrics API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_conn():
     dsn = os.getenv("DATABASE_URL")
