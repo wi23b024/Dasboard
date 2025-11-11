@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performance Dashboard</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard">
+    <header>
+      <h1>Performance Dashboard</h1>
+    </header>
+
+    <!-- Filterleiste -->
+    <section class="filters" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:12px 0 8px">
+      <div>
+        <label for="startInput" style="font-size:12px;opacity:.8;display:block;margin-bottom:4px">Start</label>
+        
+        <input id="startInput" type="datetime-local" step="3600">
+
+      </div>
+      <div>
+        <label for="endInput" style="font-size:12px;opacity:.8;display:block;margin-bottom:4px">Ende</label>
+        
+        <input id="endInput" type="datetime-local" step="3600">
+
+      </div>
+      <button id="applyFilters" class="btn">Anwenden</button>
+
+      <!-- NEU: Y-Skalierung -->
+      <div style="width:1px;height:28px;background:#ffffff22;margin:0 8px"></div>
+      <div>
+        <label for="yMinInput" style="font-size:12px;opacity:.8;display:block;margin-bottom:4px">Y-Min (ms)</label>
+        <input id="yMinInput" type="number" placeholder="z.B. 150" style="width:110px">
+      </div>
+      <div>
+        <label for="yMaxInput" style="font-size:12px;opacity:.8;display:block;margin-bottom:4px">Y-Max (ms)</label>
+        <input id="yMaxInput" type="number" placeholder="z.B. 600" style="width:110px">
+      </div>
+      <label style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+        <input id="yAutoCheck" type="checkbox" checked>
+        <span style="font-size:12px;opacity:.8">Auto</span>
+      </label>
+      <button id="applyScale" class="btn">Skalierung anwenden</button>
+    </section>
+
+    <!-- KPIs -->
+    <section class="kpi-cards">
+      <div class="card">
+        <h3>Avg Response Time</h3>
+        <p id="avgResponseTime">-</p>
+      </div>
+      <div class="card">
+        <h3>Error Rate</h3>
+        <p id="errorRate">-</p>
+      </div>
+      <div class="card">
+        <h3>Total Requests</h3>
+        <p id="totalRequests">-</p>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts">
+      <div class="chart-container wide">
+        <h2>Response Time (ms) über Zeit</h2>
+        <div style="height:320px">
+          <canvas id="responseTimeChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-container small">
+        <h2>Errors by Region</h2>
+        <div style="height:320px">
+          <canvas id="errorRegionChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabelle -->
+    <section class="table-section">
+      <h2>Recent Requests</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>Region</th>
+            <th>Status</th>
+            <th>Response Time (ms)</th>
+          </tr>
+        </thead>
+        <tbody id="requestTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- App -->
+  <script src="script.js?v=9"></script>
+</body>
+</html>
+<footer style="text-align:center; padding:20px; color:#ccc; font-size:14px;">
+  © 2025 – HMMC Dashboard | <a href="impressum.html" style="color:#4cc9f0; text-decoration:none;">Impressum</a>
+</footer>
