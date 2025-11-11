@@ -1,46 +1,61 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Impressum - HMMC Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impressum – HMMC Dashboard</title>
   <style>
+    /* === Grundfarben (wie Dashboard) === */
+    :root {
+      --bg1: #0b2447;
+      --bg2: #19376d;
+      --panel: #1f4068;
+      --text: #f8f9fa;
+      --accent: #4cc9f0;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1e2a38, #243b55);
-      color: #f5f5f5;
       margin: 0;
-      padding: 0;
-      min-height: 100vh;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg1), var(--bg2));
+      color: var(--text);
       display: flex;
       flex-direction: column;
+      min-height: 100vh;
+      justify-content: center;
       align-items: center;
     }
 
     .container {
-      max-width: 700px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      margin-top: 80px;
+      background: var(--panel);
       padding: 40px 60px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      text-align: left;
+      width: min(700px, 90vw);
     }
 
     h1 {
       text-align: center;
-      color: #4cc9f0;
-      font-size: 2.4em;
+      color: var(--accent);
+      font-size: 2rem;
       margin-bottom: 30px;
     }
 
-    p, a {
-      font-size: 1.1em;
+    h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-top: 25px;
+      margin-bottom: 10px;
+    }
+
+    p {
       line-height: 1.6;
-      color: #f1f1f1;
+      margin: 5px 0 15px;
     }
 
     a {
-      color: #90e0ef;
+      color: var(--accent);
       text-decoration: none;
     }
 
@@ -48,19 +63,18 @@
       text-decoration: underline;
     }
 
-    .back-link {
+    .back {
       display: block;
+      margin-top: 20px;
       text-align: center;
-      margin-top: 30px;
-      color: #4cc9f0;
+      font-weight: 500;
     }
 
     footer {
-      margin-top: auto;
-      padding: 20px;
       text-align: center;
-      font-size: 0.9em;
-      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 40px;
     }
   </style>
 </head>
@@ -68,23 +82,25 @@
   <div class="container">
     <h1>Impressum</h1>
 
-    <p><strong>Verantwortlich für den Inhalt:</strong></p>
-    <p>
-      <strong>HMMC Dashboard</strong><br>
-      Höchststadtplatz 6<br>
-      1200 Wien<br>
-      Österreich
-    </p>
+    <h2>Verantwortlich für den Inhalt</h2>
+    <p><strong>HMMC Dashboard</strong><br>
+    Höchststadtplatz 6<br>
+    1200 Wien<br>
+    Österreich</p>
 
-    <p>E-Mail: 
-      <a href="mailto:officehmmc@business.com">officehmmc@business.com</a>
-    </p>
+    <p><strong>E-Mail:</strong> <a href="mailto:officehmmc@business.com">officehmmc@business.com</a></p>
 
-    <a href="index.html" class="back-link">← Zurück zum Dashboard</a>
+    <h2>Projektstatus</h2>
+    <p>Dieses Dashboard ist ein nichtkommerzielles Studierendenprojekt. Es besteht kein Gewerbebetrieb. Daher liegen keine UID-Nummer oder Firmenbuchnummer vor.</p>
+
+    <h2>Haftungsausschluss</h2>
+    <p>Die Inhalte dieser Seite wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Für den Inhalt externer Links wird keine Haftung übernommen, dafür sind ausschließlich deren Betreiber verantwortlich.</p>
+
+    
+
+    <a class="back" href="index.html">← Zurück zum Dashboard</a>
   </div>
 
-  <footer>
-    © 2025 HMMC Dashboard – All rights reserved.
-  </footer>
+  <footer>© 2025 HMMC Dashboard – All rights reserved.</footer>
 </body>
 </html>
