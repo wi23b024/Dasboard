@@ -82,3 +82,128 @@ th { text-align: left; opacity: 0.8; }
   cursor: pointer;
 }
 .btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+/* Grundlayout: Sidebar + Inhalt */
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+}
+
+/* Wrapper für den Hauptinhalt rechts */
+.dashboard-wrapper {
+  margin-left: 300px;          /* Platz für Sidebar */
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dashboard selbst (leicht angepasst) */
+.dashboard {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  flex: 1;
+}
+
+/* Footer-Styling */
+.page-footer {
+  text-align: center;
+  padding: 20px;
+  color: #ccc;
+  font-size: 14px;
+}
+.page-footer a {
+  color: #4cc9f0;
+  text-decoration: none;
+}
+.page-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Seitlicher Header / Sidebar über volle Höhe */
+.side-header {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;                   /* volle Höhe */
+  width: 300px;
+  padding: 30px 22px;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  box-shadow: 4px 0 18px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Titel oben in der Sidebar */
+.side-header__brand {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.brand-title {
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  font-size: 18px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* Navigation in der Mitte der Sidebar */
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  /* zentriert die Links vertikal in der Sidebar */
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.side-nav__link {
+  display: block;
+  padding: 14px 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-size: 16px;
+  color: #ffffff;
+  opacity: 0.87;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  transition: background 0.2s ease, transform 0.15s ease,
+              border-color 0.2s ease, box-shadow 0.2s ease,
+              opacity 0.2s ease;
+}
+
+.side-nav__link:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(76, 201, 240, 0.7);
+  transform: translateX(2px);
+  box-shadow: 0 0 10px rgba(76, 201, 240, 0.35);
+  opacity: 1;
+}
+
+.side-nav__link.active {
+  background: rgba(76, 201, 240, 0.2);
+  border-color: #4cc9f0;
+  box-shadow: 0 0 14px rgba(76, 201, 240, 0.5);
+}
+
+/* Logout-Link etwas „gefährlicher“ */
+.side-nav__link--danger {
+  margin-top: 10px;
+  background: rgba(255, 80, 80, 0.08);
+  border-color: rgba(255, 99, 99, 0.2);
+}
+
+.side-nav__link--danger:hover {
+  background: rgba(255, 80, 80, 0.18);
+  border-color: rgba(255, 99, 99, 0.8);
+  box-shadow: 0 0 14px rgba(255, 99, 99, 0.55);
+}
+
+

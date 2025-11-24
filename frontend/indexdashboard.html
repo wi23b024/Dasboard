@@ -5,13 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Performance Dashboard</title>
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="styledashboard.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="dashboard">
-    <header>
-      <h1>Performance Dashboard</h1>
+
+  <!-- Seitlicher Header / Sidebar -->
+  <aside class="side-header">
+    <div class="side-header__brand">
+      <span class="brand-title">HMMC-Dashboard</span>
+    </div>
+
+    <nav class="side-nav">
+      <a href="#" class="side-nav__link active">Account Settings</a>
+      <a href="#" class="side-nav__link">Dashboard Settings</a>
+      <a href="impressum.html" class="side-nav__link">Imprint</a>
+      <a href="login.html" class="side-nav__link side-nav__link--danger">Logout</a>
+    </nav>
+  </aside>
+
+  <!-- Hauptbereich rechts von der Sidebar -->
+  <div class="dashboard-wrapper">
+    <div class="dashboard">
+      <header>
+        <h1>Performance Dashboard</h1>
     </header>
 
     <!-- Filterleiste -->
@@ -98,9 +115,10 @@
   </div>
 
   <!-- App -->
-  <script src="script.js?v=9"></script>
+  <script src="scriptdashboard.js"></script>
 </body>
 </html>
-<footer style="text-align:center; padding:20px; color:#ccc; font-size:14px;">
-  © 2025 – HMMC Dashboard | <a href="impressum.html" style="color:#4cc9f0; text-decoration:none;">Impressum</a>
-</footer>
+    <footer class="page-footer">
+      © 2025 – HMMC-Dashboard |
+    </footer>
+  </div>

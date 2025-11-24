@@ -77,6 +77,10 @@ async function handleRegister(event) {
         "Registrierung erfolgreich.";
       messageEl.classList.add("success");
 
+      setTimeout(() => {
+    window.location.href = "login.html";
+  }, 1200);
+
       // Optional: Felder leeren
       // event.target.reset();
     } else {
@@ -143,8 +147,7 @@ async function handleLogin(event) {
         (data && (data.message || data.msg)) || "Login erfolgreich.";
       messageEl.classList.add("success");
 
-      // TODO: Hier ggf. Weiterleitung ins Dashboard
-      // window.location.href = "index.html";
+      window.location.href = "indexdashboard.html";
     } else {
       messageEl.textContent =
         (data && (data.error || data.message)) || "Login fehlgeschlagen.";
@@ -159,3 +162,4 @@ async function handleLogin(event) {
     submitBtn.disabled = false;
   }
 }
+

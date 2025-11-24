@@ -302,3 +302,5 @@ document.addEventListener("DOMContentLoaded", function(){
   yMinInput.disabled = true;
   yMaxInput.disabled = true;
 });
+
+
