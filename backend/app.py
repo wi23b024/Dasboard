@@ -10,6 +10,7 @@ import psycopg
 from psycopg.rows import dict_row 
 from passlib.context import CryptContext
 import secrets
+from typing import Literal
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
@@ -17,7 +18,7 @@ app = FastAPI(title="App Metrics API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,6 +38,26 @@ def get_conn():
         dsn += ("&" if "?" in dsn else "?") + "sslmode=require"
 
     return psycopg.connect(dsn, prepare_threshold=None)
+
+def fetch_metrics(table: str, start: datetime, end: datetime):
+    sql = f"""
+        SELECT id, "timestamp", response_time_ms, request_size_kb,
+               response_size_kb, status_code, region
+        FROM {table}
+        WHERE "timestamp" BETWEEN %s AND %s
+        ORDER BY "timestamp" ASC;
+    """
+    with get_conn() as conn, conn.cursor(row_factory=dict_row) as cur:
+        cur.execute(sql, (start, end))
+        rows = cur.fetchall()
+
+    return {
+        "ok": True,
+        "count": len(rows),
+        "start": start,
+        "end": end,
+        "data": rows,
+    }
 
 # ---------- SCHEMAS ----------
 class RegisterIn(BaseModel):
@@ -119,34 +140,23 @@ def login(body: LoginIn, response: Response):
 # --- Metrics Endpoint ---
 @app.get("/metrics")
 def get_metrics(
+    table: Literal["login", "list", "tasks_create", "comment_create"] = Query(
+        "login",
+        description="Welche Tabelle: login | list | tasks_create | comment_create"
+    ),
     start: datetime = Query(..., description="Startzeitpunkt (YYYY-MM-DDTHH:MM:SSZ)"),
     end:   datetime = Query(..., description="Endzeitpunkt (YYYY-MM-DDTHH:MM:SSZ)")
 ):
     """
-    Liefert alle Zeilen aus der Tabelle 'login' zwischen start und end.
-    Beispiel:
-    /metrics?start=2025-10-07T00:00:00Z&end=2025-10-10T00:00:00Z
+    Liefert alle Zeilen aus der angegebenen Tabelle (login, list, tasks_create, comment_create)
+    zwischen start und end.
+
+    Beispiele:
+    /metrics?table=login&start=2025-01-01T00:00:00Z&end=2025-01-02T00:00:00Z
+    /metrics?table=list&start=2025-01-01T00:00:00Z&end=2025-01-02T00:00:00Z
     """
     try:
-        sql = """
-            SELECT id, "timestamp", response_time_ms, request_size_kb,
-                   response_size_kb, status_code, region
-            FROM login
-            WHERE "timestamp" BETWEEN %s AND %s
-            ORDER BY "timestamp" ASC;
-        """
-
-        with get_conn() as conn, conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(sql, (start, end))
-            rows = cur.fetchall()
-
-        return {
-            "ok": True,
-            "count": len(rows),
-            "start": start,
-            "end": end,
-            "data": rows
-        }
+        return fetch_metrics(table, start, end)
 
     except Exception as e:
         return {"ok": False, "error": str(e)}
@@ -164,20 +174,23 @@ def cron_fill():
     start = datetime.combine(today - timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
     end   = datetime.combine(today,                   datetime.min.time(), tzinfo=timezone.utc)
 
+    TABLES = ("login", "list", "tasks_create", "comment_create")
+
     try:
         with psycopg.connect(dsn, autocommit=True) as conn, conn.cursor() as cur:
-            cur.execute("DELETE FROM login WHERE timestamp >= %s AND timestamp < %s;", (start, end))
-            cur.execute("""
-                INSERT INTO login (timestamp, response_time_ms, request_size_kb, response_size_kb, status_code, region)
-                SELECT
-                  ts,
-                  (50  + round(850*random()))::int,
-                  (10  + round(290*random()))::int,
-                  (20  + round(380*random()))::int,
-                  (ARRAY[200,201,400,404,500,504])[1 + floor(random()*6)]::int,
-                  (ARRAY['EU','US','APAC'])[1 + floor(random()*3)]::text
-                FROM generate_series(%s, %s - interval '1 minute', interval '1 minute') AS ts;
-            """, (start, end))
+            for table in TABLES:
+                cur.execute(f'DELETE FROM {table} WHERE timestamp >= %s AND timestamp < %s;', (start, end))
+                cur.execute(f"""
+                    INSERT INTO {table} (timestamp, response_time_ms, request_size_kb, response_size_kb, status_code, region)
+                    SELECT
+                      ts,
+                      (50  + round(850*random()))::int,
+                      (10  + round(290*random()))::int,
+                      (20  + round(380*random()))::int,
+                      (ARRAY[200,201,400,404,500,504])[1 + floor(random()*6)]::int,
+                      (ARRAY['EU','US','APAC'])[1 + floor(random()*3)]::text
+                    FROM generate_series(%s, %s - interval '1 minute', interval '1 minute') AS ts;
+                """, (start, end))
         return {"ok": True, "start": start.isoformat(), "end": end.isoformat()}
     except Exception as e:
         return {"ok": False, "error": str(e)}
